@@ -350,7 +350,7 @@ class base {
     protected function process_idtoken($idtoken, $orignonce = '') {
         // Decode and verify idtoken.
         $idtoken = \auth_oidc\jwt::instance_from_encoded($idtoken);
-        $sub = $idtoken->claim('sub');
+        $sub = $idtoken->claim($this->config->usernametokenclaim);
         if (empty($sub)) {
             \auth_oidc\utils::debug('Invalid idtoken', 'base::process_idtoken', $idtoken);
             throw new \moodle_exception('errorauthinvalididtoken', 'auth_oidc');
@@ -361,10 +361,10 @@ class base {
             throw new \moodle_exception('errorauthinvalididtoken', 'auth_oidc');
         }
 
-        // Use 'oid' if available (Azure-specific), or fall back to standard "sub" claim.
+        // Use 'oid' if available (Azure-specific), or fall back to oidc-standard "sub" or custom claim.
         $oidcuniqid = $idtoken->claim('oid');
         if (empty($oidcuniqid)) {
-            $oidcuniqid = $idtoken->claim('sub');
+            $oidcuniqid = $idtoken->claim($this->config->usernametokenclaim);
         }
         return [$oidcuniqid, $idtoken];
     }
@@ -384,10 +384,10 @@ class base {
         $userpassed = false;
         if ($restrictions !== '') {
             $restrictions = explode("\n", $restrictions);
-            // Match "UPN" (Azure-specific) if available, otherwise match oidc-standard "sub".
+            // Match "UPN" (Azure-specific) if available, otherwise match oidc-standard "sub" or custom claim.
             $tomatch = $idtoken->claim('upn');
             if (empty($tomatch)) {
-                $tomatch = $idtoken->claim('sub');
+                $tomatch = $idtoken->claim($this->config->usernametokenclaim);
             }
             $tomatch= strtolower($tomatch);
             foreach ($restrictions as $restriction) {
@@ -439,10 +439,10 @@ class base {
     protected function createtoken($oidcuniqid, $username, $authparams, $tokenparams, \auth_oidc\jwt $idtoken, $userid = 0) {
         global $DB;
 
-        // Determine remote username. Use 'upn' if available (Azure-specific), or fall back to standard 'sub'.
+        // Determine remote username. Use 'upn' if available (Azure-specific), or fall back to oidc-standard 'sub' or custom claim.
         $oidcusername = $idtoken->claim('upn');
         if (empty($oidcusername)) {
-            $oidcusername = $idtoken->claim('sub');
+            $oidcusername = $idtoken->claim($this->config->usernametokenclaim);
         }
 
         // We should not fail here (idtoken was verified earlier to at least contain 'sub', but just in case...).

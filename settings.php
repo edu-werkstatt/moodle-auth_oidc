@@ -166,3 +166,8 @@ $configdesc = new lang_string('cfg_customicon_desc', 'auth_oidc');
 $setting = new admin_setting_configstoredfile('auth_oidc/customicon', $configkey, $configdesc, 'customicon');
 $setting->set_updatedcallback('auth_oidc_initialize_customicon');
 $settings->add($setting);
+
+$configkey = new lang_string('cfg_usernametokenclaim_key', 'auth_oidc');
+$configdesc = new lang_string('cfg_usernametokenclaim_desc', 'auth_oidc');
+$configdefault = 'sub';
+$settings->add(new admin_setting_configtext('auth_oidc/usernametokenclaim', $configkey, $configdesc, $configdefault, PARAM_TEXT));
