@@ -350,7 +350,7 @@ class base {
     protected function process_idtoken($idtoken, $orignonce = '') {
         // Decode and verify idtoken.
         $idtoken = \auth_oidc\jwt::instance_from_encoded($idtoken);
-        $sub = $idtoken->claim($this->config->usernametokenclaim);
+        $sub = $idtoken->claim($this->config->useridtokenclaim);
         if (empty($sub)) {
             \auth_oidc\utils::debug('Invalid idtoken', 'base::process_idtoken', $idtoken);
             throw new \moodle_exception('errorauthinvalididtoken', 'auth_oidc');
@@ -364,7 +364,7 @@ class base {
         // Use 'oid' if available (Azure-specific), or fall back to oidc-standard "sub" or custom claim.
         $oidcuniqid = $idtoken->claim('oid');
         if (empty($oidcuniqid)) {
-            $oidcuniqid = $idtoken->claim($this->config->usernametokenclaim);
+            $oidcuniqid = $idtoken->claim($this->config->useridtokenclaim);
         }
         return [$oidcuniqid, $idtoken];
     }
@@ -387,7 +387,7 @@ class base {
             // Match "UPN" (Azure-specific) if available, otherwise match oidc-standard "sub" or custom claim.
             $tomatch = $idtoken->claim('upn');
             if (empty($tomatch)) {
-                $tomatch = $idtoken->claim($this->config->usernametokenclaim);
+                $tomatch = $idtoken->claim($this->config->useridtokenclaim);
             }
             $tomatch= strtolower($tomatch);
             foreach ($restrictions as $restriction) {
@@ -442,7 +442,7 @@ class base {
         // Determine remote username. Use 'upn' if available (Azure-specific), or fall back to oidc-standard 'sub' or custom claim.
         $oidcusername = $idtoken->claim('upn');
         if (empty($oidcusername)) {
-            $oidcusername = $idtoken->claim($this->config->usernametokenclaim);
+            $oidcusername = $idtoken->claim($this->config->useridtokenclaim);
         }
 
         // We should not fail here (idtoken was verified earlier to at least contain 'sub', but just in case...).
